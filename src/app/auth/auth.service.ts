@@ -9,23 +9,40 @@ import Swal from 'sweetalert2';
 
 // rxjs
 import { map } from 'rxjs/operators';
-import { User } from './register/user.model';
+import { User } from './user.model';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { Store } from '@ngrx/store';
+import { AppState } from '../app.reducer';
+import { ActivateLoadingAction, DeactivateLoadingAction } from '../shared/ui.actions';
+import { SetUserAction } from './auth.actions';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
+  private userSubscription: Subscription = new Subscription();
+
   constructor(
     private afAuth: AngularFireAuth,
     private router: Router,
-    private afdb: AngularFirestore
+    private afdb: AngularFirestore,
+    private store: Store<AppState>
     ) { }
 
   initAuthListener() {
-    this.afAuth.authState.subscribe((user: firebase.User) => {
-      console.log(user);
+    this.userSubscription = this.afAuth.authState.subscribe((user: firebase.User) => {
+      if (user) {
+        this.afdb.doc(`${user.uid}/usuario`).valueChanges()
+        .subscribe((userObj: any) => {
+          const newUser = new User(userObj);
+          this.store.dispatch(new SetUserAction(newUser));
+        });
+      } else {
+        // Unsubscribe please!
+        this.userSubscription.unsubscribe();
+      }
     });
   }
 
@@ -37,13 +54,20 @@ export class AuthService {
         name,
         email: res.user.email
       };
+
+      this.store.dispatch(new ActivateLoadingAction());
+
       // Create new collection and document per user
       this.afdb.doc(`${user.uid}/usuario`)
         .set(user)
         .then(() => {
           this.router.navigateByUrl('/');
+          this.store.dispatch(new DeactivateLoadingAction());
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          this.store.dispatch(new DeactivateLoadingAction());
+        });
 
     })
     .catch(err => {
@@ -58,13 +82,16 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
+    this.store.dispatch(new ActivateLoadingAction());
     this.afAuth.auth.signInWithEmailAndPassword(email, password)
     .then(res => {
       console.log(res);
       this.router.navigateByUrl('/');
+      this.store.dispatch(new DeactivateLoadingAction());
     })
     .catch(err => {
       console.log(err);
+      this.store.dispatch(new DeactivateLoadingAction());
       Swal.fire({
         title: 'Error',
         text: 'Oops, user or email is invalid',
