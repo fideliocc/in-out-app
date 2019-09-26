@@ -1,8 +1,13 @@
 import * as fromInOut from './in-out.actions';
 import { InOut } from './in-out.model';
+import { AppState } from '../app.reducer';
 
 export interface InOutState {
     items: InOut[];
+}
+
+export interface AppState extends AppState {
+    inOut: InOutState;
 }
 
 const initState: InOutState = {

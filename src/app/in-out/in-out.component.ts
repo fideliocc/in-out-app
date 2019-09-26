@@ -9,6 +9,8 @@ import { AppState } from '../app.reducer';
 import { Subscription } from 'rxjs';
 import { ActivateLoadingAction, DeactivateLoadingAction } from '../shared/ui.actions';
 
+import * as fromInOut from '../in-out/in-out.reducer';
+
 @Component({
   selector: 'app-in-out',
   templateUrl: './in-out.component.html',
@@ -21,7 +23,7 @@ export class InOutComponent implements OnInit, OnDestroy {
   loadingSubs: Subscription = new Subscription();
   loading: boolean;
 
-  constructor(public inOut: InOutService, private store: Store<AppState>) { }
+  constructor(public inOut: InOutService, private store: Store<fromInOut.AppState>) { }
 
   ngOnInit() {
     this.loadingSubs = this.store.select('ui')

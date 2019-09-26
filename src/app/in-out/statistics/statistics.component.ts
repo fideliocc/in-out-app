@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AppState } from 'src/app/app.reducer';
+// import { AppState } from 'src/app/app.reducer';
+import * as fromInOut from '../in-out.reducer';
 import { Subscription } from 'rxjs';
 import { InOut } from '../in-out.model';
 import { Label, MultiDataSet } from 'ng2-charts';
@@ -23,7 +24,7 @@ export class StatisticsComponent implements OnInit {
 
   subscription: Subscription = new Subscription();
 
-  constructor(private store: Store<AppState>) { }
+  constructor(private store: Store<fromInOut.AppState>) { }
 
   ngOnInit() {
     this.subscription = this.store.select('inOut')

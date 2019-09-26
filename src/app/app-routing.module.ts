@@ -11,9 +11,8 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   {
     path: '',
-    component: DashboardComponent,
-    children: dashboardRoutes,
-    canActivate: [AuthGuardService]
+    loadChildren: './in-out/in-out.module#InOutModule',
+    canLoad: [AuthGuardService]
   },
   { path: '**', redirectTo: ''}
 ];
